@@ -12,6 +12,5 @@ RUN pip install --no-cache-dir -r requirements.txt
 
 
 
-COPY . . 
-RUN cd ./videoflix_app
+COPY ./videoflix_app . 
 CMD ["python3", "manage.py", "runserver", "0.0.0.0:8000"]
