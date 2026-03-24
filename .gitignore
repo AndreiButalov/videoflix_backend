@@ -22,6 +22,7 @@ media/
 db.sqlite3
 local_settings.py
 db.sqlite3
+gunicorn.ctl
 
 # Django Migrations (optional – nur wenn du sie nicht tracken willst)
 # */migrations/*.py
