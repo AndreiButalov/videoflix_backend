@@ -45,7 +45,8 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'rest_framework',
     # 'django_rq',
-    'videoflix_app'
+    'videoflix_app',
+    'auth_app'
 ]
 
 MIDDLEWARE = [
