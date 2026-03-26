@@ -46,7 +46,8 @@ INSTALLED_APPS = [
     'rest_framework',
     'django_rq',
     'videoflix_app',
-    'auth_app'
+    'auth_app',
+    'rest_framework_simplejwt',
 ]
 
 MIDDLEWARE = [
@@ -148,6 +149,16 @@ TIME_ZONE = 'UTC'
 USE_I18N = True
 
 USE_TZ = True
+
+
+
+REST_FRAMEWORK = {    
+    'DEFAULT_AUTHENTICATION_CLASSES': (
+        
+        'rest_framework_simplejwt.authentication.JWTAuthentication',
+    )    
+}
+
 
 
 # Static files (CSS, JavaScript, Images)
