@@ -4,7 +4,7 @@ from .models import Video
 from videoflix_app.tasks import convert720p
 
 
-@receiver(post_save.connect, sender=Video)
+@receiver(post_save, sender=Video)
 def create_lecture(sender, instance, created, **kwargs):
     if created:
         print('New object created')
