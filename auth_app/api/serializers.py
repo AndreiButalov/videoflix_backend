@@ -1,36 +1,40 @@
 from rest_framework import serializers
 from django.contrib.auth.models import User
+from django.contrib.auth.tokens import default_token_generator
 
 class RegistrationSerializer(serializers.ModelSerializer):
-    repeated_password = serializers.CharField(write_only=True)
+    confirmed_password = serializers.CharField(write_only=True)
 
     class Meta:
         model = User
-        fields = ['username', 'email', 'password', 'repeated_password']
+        fields = ['email', 'password', 'confirmed_password']
         extra_kwargs = {
-            'password': {
-                'write_only': True
-            },
-            'email': {
-                'required': True
-            }
+            'password': {'write_only': True},
+            'email': {'required': True}
         }
 
-    def validate_repeated_password(self, value):
-        password = self.initial_data.get('password')
-        if password and value and password != value:
-            raise serializers.ValidationError('Passwords do not match')
-        return value
+    def validate(self, data):
+        if data['password'] != data['confirmed_password']:
+            raise serializers.ValidationError("Passwords do not match")
+        return data
 
     def validate_email(self, value):
         if User.objects.filter(email=value).exists():
-            raise serializers.ValidationError('Email already exists')
+            raise serializers.ValidationError("Email already exists")
         return value
 
-    def save(self):
-        pw = self.validated_data['password']
+    def create(self, validated_data):
+        validated_data.pop('confirmed_password')
 
-        account = User(email=self.validated_data['email'], username=self.validated_data['username'])
-        account.set_password(pw)
-        account.save()
-        return account
+        user = User(
+            username=validated_data['email'],
+            email=validated_data['email'],
+            is_active=False  # 🔥 wichtig!
+        )
+        user.set_password(validated_data['password'])
+        user.save()
+
+        # 🔥 Activation Token
+        token = default_token_generator.make_token(user)
+
+        return user, token
