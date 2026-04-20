@@ -34,7 +34,6 @@ class RegistrationSerializer(serializers.ModelSerializer):
         user.set_password(validated_data['password'])
         user.save()
 
-        # 🔥 Activation Token
         token = default_token_generator.make_token(user)
 
         return user, token
