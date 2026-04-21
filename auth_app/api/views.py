@@ -13,6 +13,8 @@ from django.contrib.sites.shortcuts import get_current_site
 import uuid
 from django.core.cache import cache
 
+
+
 class RegistrationView(APIView):
     permission_classes = [AllowAny]
 
