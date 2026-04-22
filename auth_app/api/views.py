@@ -38,6 +38,10 @@ class RegistrationView(APIView):
                 from_email="kokos3101@gmail.com",
                 recipient_list=[user.email],
                 fail_silently=False,
+                html_message=f"""
+                    <p>Click this link to activate your account:</p>
+                    <a href="{activation_link}">{activation_link}</a>
+                """
             )
 
             return Response({
