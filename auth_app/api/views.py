@@ -12,6 +12,8 @@ from django.utils.encoding import force_bytes
 from django.contrib.sites.shortcuts import get_current_site
 import uuid
 from django.core.cache import cache
+from django.contrib.auth import authenticate
+from rest_framework_simplejwt.tokens import RefreshToken
 
 
 
@@ -72,3 +74,59 @@ class ActivateAccountView(APIView):
             return Response({"message": "Account activated"}, status=200)
 
         return Response({"error": "Invalid token"}, status=400)
+    
+    
+
+class LoginView(APIView):
+    permission_classes = []
+
+    def post(self, request):
+        email = request.data.get("email")
+        password = request.data.get("password")
+
+        user = authenticate(username=email, password=password)
+
+        if user is None:
+            return Response(
+                {"detail": "Invalid credentials"},
+                status=status.HTTP_401_UNAUTHORIZED
+            )
+
+        if not user.is_active:
+            return Response(
+                {"detail": "Account not activated"},
+                status=status.HTTP_403_FORBIDDEN
+            )
+
+        # JWT erzeugen
+        refresh = RefreshToken.for_user(user)
+        access_token = str(refresh.access_token)
+        refresh_token = str(refresh)
+
+        response = Response({
+            "detail": "Login successful",
+            "user": {
+                "id": user.id,
+                "username": user.username
+            }
+        }, status=status.HTTP_200_OK)
+
+        response.set_cookie(
+            key="access_token",
+            value=access_token,
+            httponly=True,
+            secure=False,
+            samesite="Lax",
+            max_age=60 * 60 
+        )
+
+        response.set_cookie(
+            key="refresh_token",
+            value=refresh_token,
+            httponly=True,
+            secure=False,
+            samesite="Lax",
+            max_age=60 * 60 * 24 * 7 
+        )
+
+        return response
