@@ -35,7 +35,7 @@ class RegistrationView(APIView):
             send_mail(
                 subject="Activate your account",
                 message=f"Click this link to activate your account:\n{activation_link}",
-                from_email="noreply@example.com",
+                from_email="kokos3101@gmail.com",
                 recipient_list=[user.email],
                 fail_silently=False,
             )
