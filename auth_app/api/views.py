@@ -3,18 +3,17 @@ from rest_framework.views import APIView
 from rest_framework.permissions import AllowAny
 from rest_framework.response import Response
 from .serializers import RegistrationSerializer
-from django.utils.http import urlsafe_base64_decode
+from django.utils.http import urlsafe_base64_decode, urlsafe_base64_encode
 from rest_framework import status
 from django.contrib.auth.models import User
 from django.core.mail import send_mail
-from django.utils.http import urlsafe_base64_encode
 from django.utils.encoding import force_bytes
 from django.contrib.sites.shortcuts import get_current_site
-import uuid
 from django.core.cache import cache
 from django.contrib.auth import authenticate
 from rest_framework_simplejwt.tokens import RefreshToken
 from rest_framework_simplejwt.exceptions import TokenError
+import uuid
 
 
 
