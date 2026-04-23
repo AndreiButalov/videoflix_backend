@@ -192,7 +192,7 @@ class CookieTokenRefreshView(APIView):
         response = Response(
             {
                 "detail": "Token refreshed",
-                "access": access_token  # nur Demo
+                "access": access_token
             },
             status=status.HTTP_200_OK
         )
@@ -201,7 +201,7 @@ class CookieTokenRefreshView(APIView):
             key="access_token",
             value=access_token,
             httponly=True,
-            secure=False,   # in production: True
+            secure=False,
             samesite="Lax",
             max_age=3600
         )
