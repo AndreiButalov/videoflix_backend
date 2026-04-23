@@ -2,7 +2,7 @@ from rest_framework import status
 from rest_framework.views import APIView
 from rest_framework.permissions import AllowAny
 from rest_framework.response import Response
-from .serializers import RegistrationSerializer
+from .serializers import RegistrationSerializer, PasswordConfirmSerializer, PasswordResetSerializer
 from django.utils.http import urlsafe_base64_decode, urlsafe_base64_encode
 from rest_framework import status
 from django.contrib.auth.models import User
@@ -207,3 +207,81 @@ class CookieTokenRefreshView(APIView):
         )
 
         return response
+    
+
+
+class PasswordResetView(APIView):
+    permission_classes = [AllowAny]
+
+    def post(self, request):
+        serializer = PasswordResetSerializer(data=request.data)
+
+        if serializer.is_valid():
+            email = serializer.validated_data["email"]
+
+            try:
+                user = User.objects.get(email=email)
+            except User.DoesNotExist:
+                return Response(
+                    {"detail": "User with this email does not exist."},
+                    status=status.HTTP_400_BAD_REQUEST
+                )
+
+            token = str(uuid.uuid4())
+            cache.set(f"password_reset_{user.id}", token, timeout=3600)
+
+            uid = urlsafe_base64_encode(force_bytes(user.pk))
+            domain = get_current_site(request).domain
+
+            reset_link = f"http://{domain}/api/password_confirm/{uid}/{token}/"
+
+            send_mail(
+                subject="Password Reset",
+                message=f"Click to reset password:\n{reset_link}",
+                from_email="your@email.com",
+                recipient_list=[user.email],
+                fail_silently=False,
+                html_message=f"""
+                    <p>Click to reset your password:</p>
+                    <a href="{reset_link}">{reset_link}</a>
+                """
+            )
+
+            return Response(
+                {"detail": "An email has been sent to reset your password."},
+                status=status.HTTP_200_OK
+            )
+
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+    
+
+
+class PasswordConfirmView(APIView):
+    permission_classes = [AllowAny]
+
+    def post(self, request, uidb64, token):
+        serializer = PasswordConfirmSerializer(data=request.data)
+
+        if not serializer.is_valid():
+            return Response(serializer.errors, status=400)
+
+        try:
+            uid = urlsafe_base64_decode(uidb64).decode()
+            user = User.objects.get(pk=uid)
+        except Exception:
+            return Response({"detail": "Invalid user."}, status=400)
+
+        saved_token = cache.get(f"password_reset_{user.id}")
+
+        if token != saved_token:
+            return Response({"detail": "Invalid or expired token."}, status=400)
+
+        user.set_password(serializer.validated_data["new_password"])
+        user.save()
+
+        cache.delete(f"password_reset_{user.id}")
+
+        return Response(
+            {"detail": "Your Password has been successfully reset."},
+            status=status.HTTP_200_OK
+        )
