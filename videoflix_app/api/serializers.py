@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from models import Video
+from videoflix_app.models import Video
 
 class VideoSerializer(serializers.ModelSerializer):
     thumbnail_url = serializers.ImageField(use_url=True)

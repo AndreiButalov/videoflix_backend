@@ -2,14 +2,14 @@ from rest_framework.views import APIView
 from rest_framework.response import Response
 from django.http import FileResponse, Http404
 from rest_framework.permissions import IsAuthenticated
-from models import Video
+from videoflix_app.models import Video
 from .serializers import VideoSerializer
 from rest_framework.permissions import IsAuthenticated
 import os
 from django.conf import settings
 
 class VideoListView(APIView):
-    permission_classes = [IsAuthenticated]
+    # permission_classes = [IsAuthenticated]
 
     def get(self, request):
         videos = Video.objects.all().order_by("-created_at")
@@ -24,7 +24,7 @@ class VideoListView(APIView):
     
 
 class VideoStreamView(APIView):
-    permission_classes = [IsAuthenticated]
+    # permission_classes = [IsAuthenticated]
 
     def get(self, request, movie_id, resolution):
         try:
