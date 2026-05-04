@@ -45,7 +45,7 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'rest_framework',
     'django_rq',
-    'videoflix_app',
+    'videoflix_app.apps.VideoflixAppConfig',
     'auth_app',
     'rest_framework_simplejwt',
     'rest_framework_simplejwt.token_blacklist',
