@@ -18,9 +18,26 @@ import uuid
 
 
 class RegistrationView(APIView):
+    """Handle user registration with email activation.
+    
+    This view allows new users to register by providing email and password.
+    An activation email with a unique token is sent to the user after successful registration.
+    """
     permission_classes = [AllowAny]
 
     def post(self, request):
+        """Register a new user and send activation email.
+        
+        Args:
+            request: HTTP request containing email and password in the body.
+            
+        Returns:
+            Response: Created user data (id, email) with activation token on success (201).
+                     Validation errors if data is invalid (400).
+                     
+        Raises:
+            ValueError: If email sending fails.
+        """
         serializer = RegistrationSerializer(data=request.data)
 
         if serializer.is_valid():
@@ -59,9 +76,21 @@ class RegistrationView(APIView):
     
 
 class ActivateAccountView(APIView):
+    """Activate user account using token from activation email."""
     permission_classes = [AllowAny]
 
     def get(self, request, uidb64, token):
+        """Activate a user account with valid token.
+        
+        Args:
+            request: HTTP request.
+            uidb64 (str): Base64 encoded user ID.
+            token (str): Unique activation token from cache.
+            
+        Returns:
+            Response: Success message if token is valid (200).
+                     Error message if token is invalid or expired (400).
+        """
         uid = urlsafe_base64_decode(uidb64).decode()
         user = User.objects.get(pk=uid)
 
@@ -78,9 +107,26 @@ class ActivateAccountView(APIView):
     
 
 class LoginView(APIView):
+    """Handle user login and JWT token generation.
+    
+    Authenticates user credentials and returns JWT tokens in HTTP-only cookies.
+    """
     permission_classes = []
 
     def post(self, request):
+        """Authenticate user and generate JWT tokens.
+        
+        Args:
+            request: HTTP request containing email and password.
+            
+        Returns:
+            Response: User data with access_token and refresh_token cookies on success (200).
+                     Unauthorized error if credentials are invalid (401).
+                     Forbidden error if account is not activated (403).
+                     
+        Note:
+            Tokens are set as HTTP-only, secure cookies with appropriate expiration times.
+        """
         email = request.data.get("email")
         password = request.data.get("password")
 
@@ -133,9 +179,22 @@ class LoginView(APIView):
 
 
 class LogoutView(APIView):
+    """Handle user logout and token blacklisting.
+    
+    Blacklists the refresh token and clears authentication cookies.
+    """
     permission_classes = [AllowAny]
 
     def post(self, request):
+        """Logout user by blacklisting refresh token.
+        
+        Args:
+            request: HTTP request with refresh_token in cookies.
+            
+        Returns:
+            Response: Success message and cleared cookies (200).
+                     Bad request error if refresh token is missing or invalid (400).
+        """
         refresh_token = request.COOKIES.get("refresh_token")
 
         if not refresh_token:
@@ -168,9 +227,23 @@ class LogoutView(APIView):
     
 
 class CookieTokenRefreshView(APIView):
+    """Refresh access token using refresh token from cookies.
+    
+    Generates a new access token without requiring re-authentication.
+    """
     permission_classes = [AllowAny]
 
     def post(self, request):
+        """Generate a new access token from refresh token.
+        
+        Args:
+            request: HTTP request with refresh_token in cookies.
+            
+        Returns:
+            Response: New access token in cookie and response body (200).
+                     Bad request if refresh token is missing (400).
+                     Unauthorized if refresh token is invalid (401).
+        """
         refresh_token = request.COOKIES.get("refresh_token")
 
         if not refresh_token:
@@ -211,9 +284,23 @@ class CookieTokenRefreshView(APIView):
 
 
 class PasswordResetView(APIView):
+    """Initiate password reset process.
+    
+    Sends a password reset email with a unique token to the user's email address.
+    """
     permission_classes = [AllowAny]
 
     def post(self, request):
+        """Send password reset email to user.
+        
+        Args:
+            request: HTTP request containing email address.
+            
+        Returns:
+            Response: Confirmation message if email exists (200).
+                     Validation errors if email format is invalid (400).
+                     Not found error if user doesn't exist (400).
+        """
         serializer = PasswordResetSerializer(data=request.data)
 
         if serializer.is_valid():
@@ -257,9 +344,27 @@ class PasswordResetView(APIView):
 
 
 class PasswordConfirmView(APIView):
+    """Reset user password with valid token.
+    
+    Validates the password reset token and updates the user's password.
+    """
     permission_classes = [AllowAny]
 
     def post(self, request, uidb64, token):
+        """Reset user password after token validation.
+        
+        Args:
+            request: HTTP request containing new_password and confirm_password.
+            uidb64 (str): Base64 encoded user ID.
+            token (str): Password reset token from email.
+            
+        Returns:
+            Response: Success message if password is updated (200).
+                     Bad request if token is invalid/expired or data is invalid (400).
+                     
+        Note:
+            Token must match the one stored in cache and be within 1 hour of creation.
+        """
         serializer = PasswordConfirmSerializer(data=request.data)
 
         if not serializer.is_valid():

@@ -4,6 +4,28 @@ from django.conf import settings
 
 
 def convert_hls(video_id, source):
+    """Convert video file to HLS format for streaming.
+    
+    Transcodes a video file to H.264/AAC format and generates HLS segments
+    (index.m3u8 playlist and .ts segment files) for adaptive bitrate streaming.
+    
+    Args:
+        video_id (int): ID of the video being converted.
+        source (str): Path to the source video file.
+        
+    Returns:
+        None: Writes HLS files to MEDIA_ROOT/hls/{video_id}/720p/
+        
+    Note:
+        - This is a background job meant to run via RQ queue
+        - Requires ffmpeg to be installed on the system
+        - Outputs 720p resolution with CRF 23 quality
+        - Creates 10-second HLS segments
+        - Output directory is created if it doesn't exist
+        
+    Raises:
+        CalledProcessError: If ffmpeg command fails.
+    """
     output_dir = os.path.join(
         settings.MEDIA_ROOT,
         "hls",
