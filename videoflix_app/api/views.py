@@ -9,7 +9,7 @@ import os
 from django.conf import settings
 
 class VideoListView(APIView):
-    # permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticated]
 
     def get(self, request):
         videos = Video.objects.all().order_by("-created_at")
@@ -24,7 +24,7 @@ class VideoListView(APIView):
     
 
 class VideoStreamView(APIView):
-    # permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticated]
 
     def get(self, request, movie_id, resolution):
         try:
