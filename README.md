@@ -25,10 +25,27 @@ Dies ist das Backend für die Videoflix-Plattform, entwickelt mit Django und Dja
 
 ### Voraussetzungen
 
-- Python 3.8+
-- Docker und Docker Compose (optional für Container-Setup)
+- Docker und Docker Compose (empfohlen)
+- Für lokale Installation: Python 3.8+
 
-### Lokale Installation
+### Umgebungsvariablen einrichten
+
+**Wichtig:** Vor dem Start das `.env`-Template kopieren:
+
+```bash
+cp .env.template .env
+```
+
+Dann die Variablen in `.env` anpassen:
+- `SECRET_KEY` - Django Secret Key
+- `FRONTEND_URL` - URL des Frontend (z.B. http://localhost:4200)
+- `EMAIL_HOST_USER` - E-Mail-Adresse für Versand
+- `EMAIL_HOST_PASSWORD` - E-Mail App-Passwort
+- Weitere Konfigurationen wie nötig
+
+Siehe `.env.template` für alle verfügbaren Variablen.
+
+### Docker Setup (empfohlen)
 
 1. Repository klonen:
    ```bash
@@ -36,22 +53,46 @@ Dies ist das Backend für die Videoflix-Plattform, entwickelt mit Django und Dja
    cd videoflix_backend
    ```
 
-2. Virtuelle Umgebung erstellen und aktivieren:
+2. `.env`-Datei aus Template erstellen:
+   ```bash
+   cp .env.template .env
+   ```
+
+3. Variablen in `.env` konfigurieren (vor allem `FRONTEND_URL`, `EMAIL_HOST_USER`, `EMAIL_HOST_PASSWORD`)
+
+4. Docker Compose starten:
+   ```bash
+   docker-compose up --build
+   ```
+
+Das Backend läuft dann unter `http://localhost:8000`
+
+### Lokale Installation (optional)
+
+Falls du lokal ohne Docker entwickeln möchtest:
+
+1. Repository klonen:
+   ```bash
+   git clone <repository-url>
+   cd videoflix_backend
+   ```
+
+2. `.env`-Datei aus Template erstellen:
+   ```bash
+   cp .env.template .env
+   ```
+
+3. Virtuelle Umgebung erstellen und aktivieren:
    ```bash
    python -m venv env
    env\Scripts\activate  # Windows
    # source env/bin/activate  # Linux/Mac
    ```
 
-3. Abhängigkeiten installieren:
+4. Abhängigkeiten installieren:
    ```bash
    pip install -r requirements.txt
    ```
-
-4. Umgebungsvariablen konfigurieren (siehe `.env` Beispiel):
-   - `SECRET_KEY`
-   - `DATABASE_URL`
-   - `EMAIL_HOST` usw.
 
 5. Datenbank migrieren:
    ```bash
@@ -61,13 +102,6 @@ Dies ist das Backend für die Videoflix-Plattform, entwickelt mit Django und Dja
 6. Server starten:
    ```bash
    python manage.py runserver
-   ```
-
-### Docker Setup
-
-1. Docker Compose verwenden:
-   ```bash
-   docker-compose up --build
    ```
 
 ## API-Endpunkte
