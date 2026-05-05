@@ -201,12 +201,16 @@ class LogoutView(APIView):
         Returns:
             Response: Success message and cleared cookies (200).
                      Bad request error if refresh token is missing or invalid (400).
+                     
+        Note:
+            Refresh token is blacklisted and cannot be used again.
+            Both access_token and refresh_token cookies are deleted.
         """
         refresh_token = request.COOKIES.get("refresh_token")
 
         if not refresh_token:
             return Response(
-                {"detail": "Refresh-Token fehlt."},
+                {"detail": "Bitte überprüfe deine Eingaben und versuche es erneut."},
                 status=status.HTTP_400_BAD_REQUEST
             )
 
@@ -216,13 +220,13 @@ class LogoutView(APIView):
 
         except TokenError:
             return Response(
-                {"detail": "Invalid refresh token."},
+                {"detail": "Bitte überprüfe deine Eingaben und versuche es erneut."},
                 status=status.HTTP_400_BAD_REQUEST
             )
 
         response = Response(
             {
-                "detail": "Logout successful! All tokens will be deleted. Refresh token is now invalid."
+                "detail": "Logout erfolgreich! Alle Tokens wurden gelöscht."
             },
             status=status.HTTP_200_OK
         )
