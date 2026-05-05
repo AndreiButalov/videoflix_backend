@@ -110,5 +110,7 @@ class PasswordConfirmSerializer(serializers.Serializer):
             ValidationError: If passwords do not match.
         """
         if data['new_password'] != data['confirm_password']:
-            raise serializers.ValidationError("Passwords do not match")
+            raise serializers.ValidationError(
+                "Bitte überprüfe deine Eingaben und versuche es erneut."
+            )
         return data

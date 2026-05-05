@@ -304,9 +304,11 @@ class PasswordResetView(APIView):
             request: HTTP request containing email address.
             
         Returns:
-            Response: Confirmation message if email exists (200).
+            Response: Confirmation message (200) regardless of email existence (security).
                      Validation errors if email format is invalid (400).
-                     Not found error if user doesn't exist (400).
+                     
+        Note:
+            Returns same message whether email exists or not for security.
         """
         serializer = PasswordResetSerializer(data=request.data)
 
@@ -317,32 +319,36 @@ class PasswordResetView(APIView):
                 user = User.objects.get(email=email)
             except User.DoesNotExist:
                 return Response(
-                    {"detail": "User with this email does not exist."},
-                    status=status.HTTP_400_BAD_REQUEST
+                    {"detail": "Falls die E-Mail existiert, erhältst du eine Nachricht zum Zurücksetzen des Passworts."},
+                    status=status.HTTP_200_OK
                 )
 
             token = str(uuid.uuid4())
             cache.set(f"password_reset_{user.id}", token, timeout=3600)
 
             uid = urlsafe_base64_encode(force_bytes(user.pk))
-            domain = get_current_site(request).domain
+            frontend_url = getattr(settings, "FRONTEND_URL", "").rstrip("/")
 
-            reset_link = f"http://{domain}/api/password_confirm/{uid}/{token}/"
+            if frontend_url:
+                reset_link = f"{frontend_url}/password-reset/{uid}/{token}/"
+            else:
+                domain = get_current_site(request).domain
+                reset_link = f"http://{domain}/api/password_confirm/{uid}/{token}/"
 
             send_mail(
-                subject="Password Reset",
-                message=f"Click to reset password:\n{reset_link}",
+                subject="Passwort zurücksetzen",
+                message=f"Klicke auf diesen Link um dein Passwort zurückzusetzen:\n{reset_link}",
                 from_email="your@email.com",
                 recipient_list=[user.email],
                 fail_silently=False,
                 html_message=f"""
-                    <p>Click to reset your password:</p>
+                    <p>Klicke auf diesen Link um dein Passwort zurückzusetzen:</p>
                     <a href="{reset_link}">{reset_link}</a>
                 """
             )
 
             return Response(
-                {"detail": "An email has been sent to reset your password."},
+                {"detail": "Falls die E-Mail existiert, erhältst du eine Nachricht zum Zurücksetzen des Passworts."},
                 status=status.HTTP_200_OK
             )
 
@@ -381,12 +387,18 @@ class PasswordConfirmView(APIView):
             uid = urlsafe_base64_decode(uidb64).decode()
             user = User.objects.get(pk=uid)
         except Exception:
-            return Response({"detail": "Invalid user."}, status=400)
+            return Response(
+                {"detail": "Ungültiger oder abgelaufener Link."},
+                status=400
+            )
 
         saved_token = cache.get(f"password_reset_{user.id}")
 
         if token != saved_token:
-            return Response({"detail": "Invalid or expired token."}, status=400)
+            return Response(
+                {"detail": "Ungültiger oder abgelaufener Link."},
+                status=400
+            )
 
         user.set_password(serializer.validated_data["new_password"])
         user.save()
@@ -394,6 +406,6 @@ class PasswordConfirmView(APIView):
         cache.delete(f"password_reset_{user.id}")
 
         return Response(
-            {"detail": "Your Password has been successfully reset."},
+            {"detail": "Dein Passwort wurde erfolgreich zurückgesetzt."},
             status=status.HTTP_200_OK
         )
