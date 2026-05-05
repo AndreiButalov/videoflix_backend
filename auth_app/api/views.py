@@ -1,6 +1,7 @@
 from rest_framework import status
 from rest_framework.views import APIView
 from rest_framework.permissions import AllowAny
+from django.conf import settings
 from rest_framework.response import Response
 from .serializers import RegistrationSerializer, PasswordConfirmSerializer, PasswordResetSerializer
 from django.utils.http import urlsafe_base64_decode, urlsafe_base64_encode
@@ -58,7 +59,7 @@ class RegistrationView(APIView):
             send_mail(
                 subject="Activate your account",
                 message=f"Click this link to activate your account:\n{activation_link}",
-                from_email="your_email_user",
+                from_email=settings.EMAIL_HOST_USER,
                 recipient_list=[user.email],
                 fail_silently=False,
                 html_message=f"""
