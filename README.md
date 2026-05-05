@@ -25,83 +25,135 @@ Dies ist das Backend für die Videoflix-Plattform, entwickelt mit Django und Dja
 
 ### Voraussetzungen
 
-- Docker und Docker Compose (empfohlen)
-- Für lokale Installation: Python 3.8+
+Wähle eine der beiden Optionen:
 
-### Umgebungsvariablen einrichten
+- **Docker Setup (empfohlen):** Docker und Docker Compose installiert
+- **Lokale Entwicklung:** Python 3.8+, pip und git
 
-**Wichtig:** Vor dem Start das `.env`-Template kopieren:
+### Quick Start mit Docker
+
+Die einfachste Variante - alles läuft in Containern.
+
+#### Schritt 1: Repository klonen
+
+```bash
+git clone https://github.com/AndreiButalov/videoflix_backend.git
+cd videoflix_backend
+```
+
+#### Schritt 2: Umgebungsvariablen kopieren
 
 ```bash
 cp .env.template .env
 ```
 
-Dann die Variablen in `.env` anpassen:
-- `SECRET_KEY` - Django Secret Key
-- `EMAIL_HOST_USER` - E-Mail-Adresse für Versand
-- `EMAIL_HOST_PASSWORD` - E-Mail App-Passwort
-- Weitere Konfigurationen wie nötig
+#### Schritt 3: .env-Datei konfigurieren
 
-Siehe `.env.template` für alle verfügbaren Variablen.
+Öffne die `.env`-Datei und fülle diese wichtigen Variablen aus:
 
-### Docker Setup (empfohlen)
+```env
+SECRET_KEY=dein-sicherer-secret-key
+DEBUG=False
+FRONTEND_URL=http://localhost:3000
 
-1. Repository klonen:
-   ```bash
-   git clone <repository-url>
-   cd videoflix_backend
-   ```
+# E-Mail für Account-Aktivierung
+EMAIL_HOST_USER=deine-email@gmail.com
+EMAIL_HOST_PASSWORD=dein-app-passwort
 
-2. `.env`-Datei aus Template erstellen:
-   ```bash
-   cp .env.template .env
-   ```
+# Datenbank
+DATABASE_URL=postgresql://user:password@db:5432/videoflix
+```
 
-3. Variablen in `.env` konfigurieren (vor allem `FRONTEND_URL`, `EMAIL_HOST_USER`, `EMAIL_HOST_PASSWORD`)
+#### Schritt 4: Docker Compose starten
 
-4. Docker Compose starten:
-   ```bash
-   docker-compose up --build
-   ```
+```bash
+docker-compose up --build
+```
 
-Das Backend läuft dann unter `http://localhost:8000`
+Das Backend ist dann erreichbar unter: **http://localhost:8000**
 
-### Lokale Installation (optional)
+Die erste Initialisierung kann 2-3 Minuten dauern. Warte bis die Meldung erscheint, dass der Server läuft.
 
-Falls du lokal ohne Docker entwickeln möchtest:
+---
 
-1. Repository klonen:
-   ```bash
-   git clone <repository-url>
-   cd videoflix_backend
-   ```
+### Lokale Installation (Entwicklung ohne Docker)
 
-2. `.env`-Datei aus Template erstellen:
-   ```bash
-   cp .env.template .env
-   ```
+Für lokale Entwicklung und Testing.
 
-3. Virtuelle Umgebung erstellen und aktivieren:
-   ```bash
-   python -m venv env
-   env\Scripts\activate  # Windows
-   # source env/bin/activate  # Linux/Mac
-   ```
+#### Schritt 1: Repository klonen
 
-4. Abhängigkeiten installieren:
-   ```bash
-   pip install -r requirements.txt
-   ```
+```bash
+git clone https://github.com/AndreiButalov/videoflix_backend.git
+cd videoflix_backend
+```
 
-5. Datenbank migrieren:
-   ```bash
-   python manage.py migrate
-   ```
+#### Schritt 2: Virtuelle Umgebung erstellen
 
-6. Server starten:
-   ```bash
-   python manage.py runserver
-   ```
+**Windows:**
+```bash
+python -m venv env
+env\Scripts\activate
+```
+
+**Mac/Linux:**
+```bash
+python3 -m venv env
+source env/bin/activate
+```
+
+Nach erfolgreicher Aktivierung siehst du `(env)` am Anfang deiner Eingabezeile.
+
+#### Schritt 3: Abhängigkeiten installieren
+
+```bash
+pip install --upgrade pip
+pip install -r requirements.txt
+```
+
+Das installiert alle notwendigen Pakete wie Django, Django REST Framework, PostgreSQL-Driver, etc.
+
+#### Schritt 4: Umgebungsvariablen kopieren und konfigurieren
+
+```bash
+cp .env.template .env
+```
+
+Öffne `.env` und fülle folgende Werte aus:
+
+```env
+SECRET_KEY=dein-sicherer-secret-key
+DEBUG=True
+FRONTEND_URL=http://localhost:3000
+
+# E-Mail für Account-Aktivierung
+EMAIL_HOST_USER=deine-email@gmail.com
+EMAIL_HOST_PASSWORD=dein-app-passwort
+
+# Datenbank (SQLite für lokale Entwicklung)
+DATABASE_URL=sqlite:///db.sqlite3
+```
+
+#### Schritt 5: Datenbank initialisieren
+
+```bash
+python manage.py migrate
+```
+
+Das erstellt alle notwendigen Datenbanktabellen.
+
+#### Schritt 6: Admin-Benutzer erstellen (optional)
+
+```bash
+python manage.py createsuperuser
+```
+
+Folge den Anweisungen um einen Admin-Account zu erstellen. Danach kannst du auf `http://localhost:8000/admin` zugreifen.
+
+#### Schritt 7: Server starten
+
+```bash
+python manage.py runserver
+```
 
 ## API-Endpunkte
 
@@ -148,11 +200,3 @@ videoflix_backend/
 ├── docker-compose.yml # Docker-Konfiguration
 └── manage.py          # Django-Management-Script
 ```
-
-## Beitrag
-
-1. Fork das Repository
-2. Erstelle einen Feature-Branch
-3. Committe deine Änderungen
-4. Pushe zum Branch
-5. Erstelle einen Pull Request
