@@ -4,7 +4,6 @@ from django.http import FileResponse, Http404
 from rest_framework.permissions import IsAuthenticated
 from videoflix_app.models import Video
 from .serializers import VideoSerializer
-from rest_framework.permissions import IsAuthenticated
 import os
 from django.conf import settings
 
