@@ -30,7 +30,9 @@ class RegistrationSerializer(serializers.ModelSerializer):
             ValidationError: If passwords do not match.
         """
         if data['password'] != data['confirmed_password']:
-            raise serializers.ValidationError("Passwords do not match")
+            raise serializers.ValidationError(
+                "Bitte überprüfe deine Eingaben und versuche es erneut."
+            )
         return data
 
     def validate_email(self, value):
@@ -46,7 +48,9 @@ class RegistrationSerializer(serializers.ModelSerializer):
             ValidationError: If email already exists in database.
         """
         if User.objects.filter(email=value).exists():
-            raise serializers.ValidationError("Email already exists")
+            raise serializers.ValidationError(
+                "Bitte überprüfe deine Eingaben und versuche es erneut."
+            )
         return value
 
     def create(self, validated_data):

@@ -4,7 +4,6 @@ from rest_framework.permissions import AllowAny
 from rest_framework.response import Response
 from .serializers import RegistrationSerializer, PasswordConfirmSerializer, PasswordResetSerializer
 from django.utils.http import urlsafe_base64_decode, urlsafe_base64_encode
-from rest_framework import status
 from django.contrib.auth.models import User
 from django.core.mail import send_mail
 from django.utils.encoding import force_bytes
@@ -13,6 +12,7 @@ from django.core.cache import cache
 from django.contrib.auth import authenticate
 from rest_framework_simplejwt.tokens import RefreshToken
 from rest_framework_simplejwt.exceptions import TokenError
+from django.conf import settings
 import uuid
 
 
@@ -47,9 +47,13 @@ class RegistrationView(APIView):
             cache.set(f"activation_{user.id}", token, timeout=3600)
 
             uid = urlsafe_base64_encode(force_bytes(user.pk))
-            domain = get_current_site(request).domain
+            frontend_url = getattr(settings, "FRONTEND_URL", "").rstrip("/")
 
-            activation_link = f"http://{domain}/api/activate/{uid}/{token}/"
+            if frontend_url:
+                activation_link = f"{frontend_url}/activate/{uid}/{token}/"
+            else:
+                domain = get_current_site(request).domain
+                activation_link = f"http://{domain}/api/activate/{uid}/{token}/"
 
             send_mail(
                 subject="Activate your account",
@@ -100,7 +104,10 @@ class ActivateAccountView(APIView):
             user.is_active = True
             user.save()
 
-            return Response({"message": "Account activated"}, status=200)
+            return Response(
+                {"message": "Account successfully activated."},
+                status=200
+            )
 
         return Response({"error": "Invalid token"}, status=400)
     
