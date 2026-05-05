@@ -79,16 +79,14 @@ Dies ist das Backend für die Videoflix-Plattform, entwickelt mit Django und Dja
 - `POST /api/login/` - Anmeldung
 - `POST /api/logout/` - Abmeldung
 - `POST /api/token/refresh/` - Token-Aktualisierung
-- `POST /api/password/reset/` - Passwort-Reset anfordern
-- `POST /api/password/confirm/<uidb64>/<token>/` - Passwort bestätigen
+- `POST /api/password_reset/` - Passwort-Reset anfordern
+- `POST /api/password_confirm/<uidb64>/<token>/` - Passwort bestätigen
 
 ### Videos
 
-- `GET /api/videos/` - Videos auflisten
-- `POST /api/videos/` - Video hochladen
-- `GET /api/videos/<id>/` - Video-Details
-- `PUT /api/videos/<id>/` - Video aktualisieren
-- `DELETE /api/videos/<id>/` - Video löschen
+- `GET /api/video/` - Videos auflisten
+- `GET /api/video/<movie_id>/<resolution>/index.m3u8` - HLS-Master-Playlist anfordern
+- `GET /api/video/<movie_id>/<resolution>/<segment>/` - HLS-Segment anfordern
 
 ## Verwendung
 
