@@ -141,14 +141,14 @@ class LoginView(APIView):
 
         if user is None:
             return Response(
-                {"detail": "Invalid credentials"},
+                {"detail": "Bitte überprüfe deine Eingaben und versuche es erneut."},
                 status=status.HTTP_401_UNAUTHORIZED
             )
 
         if not user.is_active:
             return Response(
-                {"detail": "Account not activated"},
-                status=status.HTTP_403_FORBIDDEN
+                {"detail": "Bitte überprüfe deine Eingaben und versuche es erneut."},
+                status=status.HTTP_401_UNAUTHORIZED
             )
 
         refresh = RefreshToken.for_user(user)
