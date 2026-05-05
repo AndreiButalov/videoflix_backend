@@ -38,7 +38,6 @@ cp .env.template .env
 
 Dann die Variablen in `.env` anpassen:
 - `SECRET_KEY` - Django Secret Key
-- `FRONTEND_URL` - URL des Frontend (z.B. http://localhost:4200)
 - `EMAIL_HOST_USER` - E-Mail-Adresse für Versand
 - `EMAIL_HOST_PASSWORD` - E-Mail App-Passwort
 - Weitere Konfigurationen wie nötig
