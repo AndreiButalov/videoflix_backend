@@ -58,7 +58,7 @@ class RegistrationView(APIView):
             send_mail(
                 subject="Activate your account",
                 message=f"Click this link to activate your account:\n{activation_link}",
-                from_email="kokos3101@gmail.com",
+                from_email="your_email_user",
                 recipient_list=[user.email],
                 fail_silently=False,
                 html_message=f"""
@@ -201,10 +201,6 @@ class LogoutView(APIView):
         Returns:
             Response: Success message and cleared cookies (200).
                      Bad request error if refresh token is missing or invalid (400).
-                     
-        Note:
-            Refresh token is blacklisted and cannot be used again.
-            Both access_token and refresh_token cookies are deleted.
         """
         refresh_token = request.COOKIES.get("refresh_token")
 
