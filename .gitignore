@@ -45,4 +45,4 @@ htmlcov/
 
 # Environment variables
 *.env
-.env*
+# .env*
