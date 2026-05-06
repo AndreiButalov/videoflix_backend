@@ -1,7 +1,6 @@
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from django.http import FileResponse, Http404
-from rest_framework.permissions import IsAuthenticated
 from videoflix_app.models import Video
 from .serializers import VideoSerializer
 import os
@@ -12,7 +11,6 @@ class VideoListView(APIView):
     
     Returns videos sorted by creation date in descending order.
     """
-    permission_classes = [IsAuthenticated]
 
     def get(self, request):
         """Fetch all videos sorted by newest first.
@@ -40,7 +38,6 @@ class VideoStreamView(APIView):
     
     Returns the HLS playlist (index.m3u8) for the specified video and resolution.
     """
-    permission_classes = [IsAuthenticated]
 
     def get(self, request, movie_id, resolution):
         """Retrieve HLS manifest file for video streaming.
@@ -83,7 +80,6 @@ class VideoSegmentView(APIView):
     
     Returns individual video segments (.ts files) used in HLS streaming.
     """
-    permission_classes = [IsAuthenticated]
 
     def get(self, request, movie_id, resolution, segment):
         """Retrieve a video segment file for streaming.
