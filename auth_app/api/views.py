@@ -6,13 +6,14 @@ from rest_framework.response import Response
 from .serializers import RegistrationSerializer, PasswordConfirmSerializer, PasswordResetSerializer
 from django.utils.http import urlsafe_base64_decode, urlsafe_base64_encode
 from django.contrib.auth.models import User
-from django.core.mail import send_mail
+from django.core.mail import EmailMultiAlternatives
 from django.utils.encoding import force_bytes
 from django.contrib.sites.shortcuts import get_current_site
 from django.core.cache import cache
 from django.contrib.auth import authenticate
 from rest_framework_simplejwt.tokens import RefreshToken
 from rest_framework_simplejwt.exceptions import TokenError
+from django.template.loader import render_to_string
 from django.conf import settings
 import uuid
 
@@ -49,6 +50,7 @@ class RegistrationView(APIView):
 
             uid = urlsafe_base64_encode(force_bytes(user.pk))
             frontend_url = getattr(settings, "FRONTEND_URL", "").rstrip("/")
+            user_name = user.get_full_name() or user.username
 
             if frontend_url:
                 activation_link = (
@@ -62,17 +64,32 @@ class RegistrationView(APIView):
                     f"?uid={uid}&token={token}"
                 )
 
-            send_mail(
-            subject="Activate your account",
-            message=f"Click this link:\n{activation_link}",
-            from_email=settings.EMAIL_HOST_USER,
-            recipient_list=[user.email],
-                fail_silently=False,
-                html_message=f"""
-                    <p>Click this link to activate your account:</p>
-                    <a href="{activation_link}">{activation_link}</a>
-                """
+            html_message = render_to_string(
+                "email_activation.html",
+                {
+                    "activation_link": activation_link,
+                    "user_name": user_name
+                }
             )
+
+
+            email = EmailMultiAlternatives(
+                subject="Activate your account",
+                body=f"Click this link:\n{activation_link}",
+                from_email=settings.EMAIL_HOST_USER,
+                to=[user.email],
+            )
+
+            # Logo als Attachment hinzufügen
+            import os
+            logo_path = os.path.join(settings.BASE_DIR, 'auth_app', 'templates', 'img', 'Logo.svg')
+            if os.path.exists(logo_path):
+                with open(logo_path, 'rb') as f:
+                    logo_data = f.read()
+                email.attach('Logo.svg', logo_data, 'image/svg+xml')
+
+            email.attach_alternative(html_message, "text/html")
+            email.send() 
 
             return Response({
                 "user": {
