@@ -51,16 +51,22 @@ class RegistrationView(APIView):
             frontend_url = getattr(settings, "FRONTEND_URL", "").rstrip("/")
 
             if frontend_url:
-                activation_link = f"{frontend_url}/activate/{uid}/{token}/"
+                activation_link = (
+                    f"{frontend_url}/pages/auth/activate.html"
+                    f"?uid={uid}&token={token}"
+                )
             else:
                 domain = get_current_site(request).domain
-                activation_link = f"http://{domain}/api/activate/{uid}/{token}/"
+                activation_link = (
+                    f"http://{domain}/pages/auth/activate.html"
+                    f"?uid={uid}&token={token}"
+                )
 
             send_mail(
-                subject="Activate your account",
-                message=f"Click this link to activate your account:\n{activation_link}",
-                from_email=settings.EMAIL_HOST_USER,
-                recipient_list=[user.email],
+            subject="Activate your account",
+            message=f"Click this link:\n{activation_link}",
+            from_email=settings.EMAIL_HOST_USER,
+            recipient_list=[user.email],
                 fail_silently=False,
                 html_message=f"""
                     <p>Click this link to activate your account:</p>
