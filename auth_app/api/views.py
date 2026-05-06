@@ -337,10 +337,16 @@ class PasswordResetView(APIView):
             frontend_url = getattr(settings, "FRONTEND_URL", "").rstrip("/")
 
             if frontend_url:
-                reset_link = f"{frontend_url}/password-reset/{uid}/{token}/"
+                reset_link = (
+                    f"{frontend_url}/pages/auth/password-reset.html"
+                    f"?uid={uid}&token={token}"
+                )
             else:
                 domain = get_current_site(request).domain
-                reset_link = f"http://{domain}/api/password_confirm/{uid}/{token}/"
+                reset_link = (
+                    f"http://{domain}/pages/auth/password-reset.html"
+                    f"?uid={uid}&token={token}"
+                )
 
             send_mail(
                 subject="Passwort zurücksetzen",
