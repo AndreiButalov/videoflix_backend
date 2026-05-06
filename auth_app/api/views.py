@@ -80,14 +80,6 @@ class RegistrationView(APIView):
                 to=[user.email],
             )
 
-            # Logo als Attachment hinzufügen
-            import os
-            logo_path = os.path.join(settings.BASE_DIR, 'auth_app', 'templates', 'img', 'Logo.svg')
-            if os.path.exists(logo_path):
-                with open(logo_path, 'rb') as f:
-                    logo_data = f.read()
-                email.attach('Logo.svg', logo_data, 'image/svg+xml')
-
             email.attach_alternative(html_message, "text/html")
             email.send() 
 
