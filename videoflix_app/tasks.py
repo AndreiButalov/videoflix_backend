@@ -1,9 +1,7 @@
 import os
 import subprocess
-
 from django.conf import settings
 from django.core.files import File
-
 from videoflix_app.models import Video
 
 
