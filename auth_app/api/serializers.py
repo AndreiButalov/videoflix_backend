@@ -7,11 +7,12 @@ class RegistrationSerializer(serializers.ModelSerializer):
     
     Validates email uniqueness, password confirmation, and creates a new user.
     """
+    username = serializers.CharField(required=False, allow_blank=True)
     confirmed_password = serializers.CharField(write_only=True)
 
     class Meta:
         model = User
-        fields = ['email', 'password', 'confirmed_password']
+        fields = ['username', 'email', 'password', 'confirmed_password']
         extra_kwargs = {
             'password': {'write_only': True},
             'email': {'required': True}
@@ -68,7 +69,7 @@ class RegistrationSerializer(serializers.ModelSerializer):
         validated_data.pop('confirmed_password')
 
         user = User(
-            username=validated_data['email'],
+            username=validated_data.get('username') or validated_data['email'],
             email=validated_data['email'],
             is_active=False
         )
