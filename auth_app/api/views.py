@@ -15,6 +15,83 @@ from rest_framework_simplejwt.tokens import RefreshToken
 from rest_framework_simplejwt.exceptions import TokenError
 from django.template.loader import render_to_string
 from django.conf import settings
+
+
+
+
+class RegistrationView(APIView):
+    """Handle user registration with email activation.
+    
+    This view allows new users to register by providing email and password.
+    An activation email with a unique token is sent to the user after successful registration.
+    """
+    permission_classes = [AllowAny]
+
+    def post(self, request):
+        """Register a new user and send activation email.
+        
+        Args:
+            request: HTTP request containing email and password in the body.
+            
+        Returns:
+            Response: Created user data (id, email) with activation token on success (201).
+                     Validation errors if data is invalid (400).
+                     
+        Raises:
+            ValueError: If email sending fails.
+        """
+        serializer = RegistrationSerializer(data=request.data)
+
+        if serializer.is_valid():
+            user, token = serializer.save()
+
+            token = str(uuid.uuid4())
+            cache.set(f"activation_{user.id}", token, timeout=3600)
+
+            uid = urlsafe_base64_encode(force_bytes(user.pk))
+            frontend_url = getattr(settings, "FRONTEND_URL", "").rstrip("/")
+            user_name = user.get_full_name() or user.username
+
+            if frontend_url:
+                activation_link = (
+                    f"{frontend_url}/pages/auth/activate.html"
+                    f"?uid={uid}&token={token}"
+                )
+            else:
+                domain = get_current_site(request).domain
+                activation_link = (
+                    f"http://{domain}/pages/auth/activate.html"
+                    f"?uid={uid}&token={token}"
+                )
+
+            html_message = render_to_string(
+                "email_activation.html",
+                {
+                    "activation_link": activation_link,
+                    "user_name": user_name
+                }
+            )
+
+
+            email = EmailMultiAlternatives(
+                subject="Activate your account",
+                body=f"Click this link:\n{activation_link}",
+                from_email=settings.EMAIL_HOST_USER,
+                to=[user.email],
+            )
+
+            email.attach_alternative(html_message, "text/html")
+            email.send() 
+
+            return Response({
+                "user": {
+                    "id": user.id,
+                    "email": user.email
+                },
+                "token": token
+            }, status=status.HTTP_201_CREATED)
+
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 import uuid
 
 
@@ -357,17 +434,22 @@ class PasswordResetView(APIView):
                     f"?uid={uid}&token={token}"
                 )
 
-            send_mail(
-                subject="Passwort zurücksetzen",
-                message=f"Klicke auf diesen Link um dein Passwort zurückzusetzen:\n{reset_link}",
-                from_email="your@email.com",
-                recipient_list=[user.email],
-                fail_silently=False,
-                html_message=f"""
-                    <p>Klicke auf diesen Link um dein Passwort zurückzusetzen:</p>
-                    <a href="{reset_link}">{reset_link}</a>
-                """
+            html_message = render_to_string(
+                "password_reset.html",
+                {
+                    "reset_link": reset_link,
+                }
             )
+
+            email = EmailMultiAlternatives(
+                subject="Passwort zurücksetzen",
+                body=f"Klicke auf diesen Link um dein Passwort zurückzusetzen:\n{reset_link}",
+                from_email=settings.EMAIL_HOST_USER,
+                to=[user.email],
+            )
+
+            email.attach_alternative(html_message, "text/html")
+            email.send()
 
             return Response(
                 {"detail": "Falls die E-Mail existiert, erhältst du eine Nachricht zum Zurücksetzen des Passworts."},
