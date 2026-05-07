@@ -1,40 +1,61 @@
 import os
 import subprocess
+
 from django.conf import settings
+from django.core.files import File
+
+from videoflix_app.models import Video
 
 
 def convert_hls(video_id, source):
-    """Convert video file to HLS format for multiple resolutions.
-    
-    Transcodes a video file to H.264/AAC format and generates HLS segments
-    for 480p, 720p, and 1080p resolutions.
-    (index.m3u8 playlist and .ts segment files) for adaptive bitrate streaming.
-    
-    Args:
-        video_id (int): ID of the video being converted.
-        source (str): Path to the source video file.
-        
-    Returns:
-        None: Writes HLS files to MEDIA_ROOT/hls/{video_id}/{resolution}/
-        
-    Note:
-        - This is a background job meant to run via RQ queue
-        - Requires ffmpeg to be installed on the system
-        - Generates 480p, 720p, and 1080p versions
-        - Creates 10-second HLS segments for each resolution
-        - Output directories are created if they don't exist
-        - Quality (CRF 23) is consistent across all resolutions
-        
-    Raises:
-        CalledProcessError: If ffmpeg command fails.
     """
+    Convert video file to HLS format for multiple resolutions
+    and automatically generate a thumbnail if none exists.
+    """
+
+    video = Video.objects.get(id=video_id)
+    """    
+    Thumbnail automatisch generieren    
+    """
+    thumbnail_dir = os.path.join(
+        settings.MEDIA_ROOT,
+        "thumbnails"
+    )
+
+    os.makedirs(thumbnail_dir, exist_ok=True)
+
+    thumbnail_path = os.path.join(
+        thumbnail_dir,
+        f"video_{video_id}.jpg"
+    )
+
+    if not video.thumbnail_url:
+
+        thumbnail_cmd = [
+            "ffmpeg",
+            "-i", source,
+            "-ss", "00:00:05",
+            "-vframes", "1",
+            thumbnail_path
+        ]
+
+        subprocess.run(thumbnail_cmd, check=True)
+
+        with open(thumbnail_path, "rb") as f:
+            video.thumbnail_url.save(
+                f"video_{video_id}.jpg",
+                File(f),
+                save=True
+            )
+
     resolutions = [
         {"name": "480p", "scale": "scale=-2:480"},
         {"name": "720p", "scale": "scale=-2:720"},
         {"name": "1080p", "scale": "scale=-2:1080"},
     ]
-    
+
     for resolution in resolutions:
+
         output_dir = os.path.join(
             settings.MEDIA_ROOT,
             "hls",
@@ -44,7 +65,10 @@ def convert_hls(video_id, source):
 
         os.makedirs(output_dir, exist_ok=True)
 
-        output_file = os.path.join(output_dir, "index.m3u8")
+        output_file = os.path.join(
+            output_dir,
+            "index.m3u8"
+        )
 
         cmd = [
             "ffmpeg",
@@ -56,8 +80,9 @@ def convert_hls(video_id, source):
             "-preset", "fast",
             "-hls_time", "10",
             "-hls_playlist_type", "vod",
-            "-hls_segment_filename", os.path.join(output_dir, "segment_%03d.ts"),
+            "-hls_segment_filename",
+            os.path.join(output_dir, "segment_%03d.ts"),
             output_file
         ]
 
-        subprocess.run(cmd)
+        subprocess.run(cmd, check=True)
