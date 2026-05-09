@@ -424,13 +424,13 @@ class PasswordResetView(APIView):
 
             if frontend_url:
                 reset_link = (
-                    f"{frontend_url}/pages/auth/password-reset.html"
+                    f"{frontend_url}/pages/auth/confirm_password.html"
                     f"?uid={uid}&token={token}"
                 )
             else:
                 domain = get_current_site(request).domain
                 reset_link = (
-                    f"http://{domain}/pages/auth/password-reset.html"
+                    f"http://{domain}/pages/auth/confirm_password.html"
                     f"?uid={uid}&token={token}"
                 )
 
