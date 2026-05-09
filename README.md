@@ -34,6 +34,12 @@ This is the backend for the Videoflix streaming platform, developed with Django 
 #### Step 1: Clone repository
 
 ```bash
+
+# Frontend
+git clone https://github.com/AndreiButalov/videoflix_fronend.git
+
+
+# Backend
 git clone https://github.com/AndreiButalov/videoflix_backend.git
 cd videoflix_backend
 ```
