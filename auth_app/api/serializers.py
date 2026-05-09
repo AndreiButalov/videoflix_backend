@@ -50,7 +50,7 @@ class RegistrationSerializer(serializers.ModelSerializer):
         """
         if User.objects.filter(email=value).exists():
             raise serializers.ValidationError(
-                "Bitte überprüfe deine Eingaben und versuche es erneut."
+                "Für diese E-Mail-Adresse existiert bereits ein Konto."
             )
         return value
 
