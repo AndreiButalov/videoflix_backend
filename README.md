@@ -57,6 +57,7 @@ Open the `.env` file and fill in these important variables:
 ```env
 SECRET_KEY=your-secure-secret-key
 DEBUG=False
+
 FRONTEND_URL=http://localhost:3000
 
 # Email for account activation
